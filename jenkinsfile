@@ -1,0 +1,54 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven3'
+        jdk 'JDK17'
+    }
+
+    parameters {
+        choice(name: 'BROWSER',
+               choices: ['chrome', 'firefox', 'edge'],
+               description: 'Select browser')
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git 'https://your-repo-url.git'
+            }
+        }
+
+        stage('Build & Test') {
+            steps {
+                sh "mvn clean test -Dbrowser=${params.BROWSER}"
+            }
+        }
+
+        stage('Publish Extent Report') {
+            steps {
+                publishHTML([
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
+                    reportDir: 'target/ExtentReports',
+                    reportFiles: 'Spark.html',
+                    reportName: 'Extent Automation Report'
+                ])
+            }
+        }
+
+        stage('Archive Reports') {
+            steps {
+                archiveArtifacts artifacts: 'target/**', fingerprint: true
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
