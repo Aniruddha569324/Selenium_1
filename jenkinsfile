@@ -1,7 +1,7 @@
 pipeline {
 
-    agent any 
-
+    agent any
+p
     parameters {
         choice(
             name: 'BROWSER',
